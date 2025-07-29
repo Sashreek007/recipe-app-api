@@ -1,24 +1,38 @@
+#Use a small Python base image
+
 FROM python:3.9-alpine3.13
-LABEL maintainer="shrek"
 
+#Metadata
+LABEL maintainer="shrek" 
 
-ENV PYTHONUNBUFFERED 1
+#Makes Python output logs instantly (useful for Docker logs)
+ENV PYTHONUNBUFFERED=1
 
 
 COPY ./requirements.txt /tmp/requirements.txt
+# Copy app code to container
 COPY ./app /app
+# Set working directory
 WORKDIR /app
+# Expose port 8000 for app (e.g., Django server)
 EXPOSE 8000
 
+# Create virtual env at /py
 RUN python -m venv /py && \
-  /py/bin/pip install --upgrade pip && pip \
+  # Upgrade pip in the venv
+  /py/bin/pip install --upgrade pip && \
+  # Install Python deps
   /py/bin/pip install -r /tmp/requirements.txt && \
+  # Clean up
   rm -rf /tmp && \
-  adduser \ 
+  adduser \
   --disabled-password \
   --no-create-home \
+  # Create a non-root user for safety
   django-user
 
+# Add virtualenv to PATH
 ENV PATH="/py/bin:$PATH"
 
+# Run the container as this unprivileged user
 USER django-user
