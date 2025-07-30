@@ -10,6 +10,9 @@ ENV PYTHONUNBUFFERED=1
 
 
 COPY ./requirements.txt /tmp/requirements.txt
+
+COPY ./requirements.dev.txt /tmp/requirements.dev.txt
+
 # Copy app code to container
 COPY ./app /app
 # Set working directory
@@ -17,12 +20,16 @@ WORKDIR /app
 # Expose port 8000 for app (e.g., Django server)
 EXPOSE 8000
 
+ARG DEV=false
 # Create virtual env at /py
 RUN python -m venv /py && \
   # Upgrade pip in the venv
   /py/bin/pip install --upgrade pip && \
   # Install Python deps
   /py/bin/pip install -r /tmp/requirements.txt && \
+  if [$DEV = "true"]; \
+  then /py/bin/pip install -r /tmp/requirements.dev.txt ; \
+  fi && \
   # Clean up
   rm -rf /tmp && \
   adduser \
